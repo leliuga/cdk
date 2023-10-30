@@ -1,3 +1,4 @@
+// Package resource provides a resource definition.
 package resource
 
 import (

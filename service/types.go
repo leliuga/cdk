@@ -1,3 +1,4 @@
+// Package service provides a service definition.
 package service
 
 import (

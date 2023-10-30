@@ -1,3 +1,4 @@
+// Package event provides the event definition.
 package event
 
 import (

@@ -1,3 +1,4 @@
+// Package schema provides a HTTP schema definition.
 package schema
 
 import (

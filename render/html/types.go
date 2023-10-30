@@ -1,3 +1,4 @@
+// Package html provides a HTML renderer.
 package html
 
 import (

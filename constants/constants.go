@@ -1,3 +1,4 @@
+// Package constants contains constants used in the application.
 package constants
 
 import (

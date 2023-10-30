@@ -1,3 +1,4 @@
+// Package gql provides a GraphQL schema to Go struct code generator.
 package gql
 
 import (

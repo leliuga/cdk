@@ -1,3 +1,4 @@
+// Package database provides a database abstraction layer for SQL and NoSQL databases.
 package database
 
 import (

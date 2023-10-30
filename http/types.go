@@ -1,3 +1,4 @@
+// Package http provides HTTP common types definition.
 package http
 
 type (

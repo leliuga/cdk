@@ -1,3 +1,4 @@
+// Package render provides a renderer and minify.
 package render
 
 import (

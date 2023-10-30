@@ -1,3 +1,4 @@
+// Package cmd provides the service cli commands.
 package cmd
 
 import (
