@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/leliuga/validation"
+	"github.com/leliuga/cdk/validation"
 )
 
 var (

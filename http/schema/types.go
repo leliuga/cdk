@@ -3,7 +3,7 @@ package schema
 import (
 	"github.com/leliuga/cdk/http"
 	"github.com/leliuga/cdk/types"
-	"github.com/leliuga/validation"
+	"github.com/leliuga/cdk/validation"
 )
 
 type (

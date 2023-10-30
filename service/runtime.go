@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/leliuga/cdk/types"
-	"github.com/leliuga/validation"
+	"github.com/leliuga/cdk/validation"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
