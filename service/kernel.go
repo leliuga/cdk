@@ -9,7 +9,7 @@ import (
 // NewKernel returns a new kernel.
 func NewKernel() *Kernel {
 	return &Kernel{
-		Instances: types.Map[any]{},
+		instances: types.Map[any]{},
 	}
 }
 
@@ -23,17 +23,22 @@ func (k *Kernel) Shutdown(context.Context) error {
 	return nil
 }
 
-// Register a new instance to the kernel.
-func (k *Kernel) Register(key string, instance any) {
-	k.Instances.Set(key, instance)
+// Set an instance to the kernel.
+func (k *Kernel) Set(key string, instance any) {
+	k.instances.Set(key, instance)
 }
 
 // Get an instance from the kernel.
 func (k *Kernel) Get(key string) any {
-	return k.Instances.Get(key)
+	return k.instances.Get(key)
 }
 
 // Has an instance from the kernel.
 func (k *Kernel) Has(key string) bool {
-	return k.Instances.Has(key)
+	return k.instances.Has(key)
+}
+
+// Instances returns all instances from the kernel.
+func (k *Kernel) Instances() types.Map[any] {
+	return k.instances
 }

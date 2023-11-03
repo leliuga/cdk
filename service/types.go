@@ -43,7 +43,7 @@ type (
 		Runtime                 *Runtime                      `json:"runtime"`
 		Database                *database.Options             `json:"database"`
 		ErrorHandler            func(*fiber.Ctx, error) error `json:"-"`
-		Kernel                  *Kernel                       `json:"-"`
+		Kernel                  IKernel                       `json:"-"`
 	}
 
 	// BuildInfo defines the build information for a Service.
@@ -88,7 +88,8 @@ type (
 	// Kernel represents the service kernel.
 	Kernel struct {
 		IKernel
-		Instances types.Map[any]
+
+		instances types.Map[any]
 	}
 
 	// Engine defines the engine for a Service runtime.
@@ -105,7 +106,22 @@ type (
 
 	// IKernel represents the service kernel interface.
 	IKernel interface {
+		// Boot the kernel.
 		Boot(*Service) error
+
+		// Shutdown the kernel.
 		Shutdown(context.Context) error
+
+		// Set an instance to the kernel.
+		Set(key string, instance any)
+
+		// Get an instance from the kernel.
+		Get(key string) any
+
+		// Has an instance from the kernel.
+		Has(key string) bool
+
+		// Instances returns all instances from the kernel.
+		Instances() types.Map[any]
 	}
 )
