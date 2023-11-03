@@ -19,7 +19,7 @@ import (
 
 const (
 	DefaultDomain          = "leliuga.com"
-	DefaultApplicationName = "Application"
+	DefaultApplicationName = "Leliuga"
 	DefaultVendor          = `Leliuga`
 )
 
