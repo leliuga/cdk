@@ -44,7 +44,7 @@ func containerFile(options *service.Options) string {
 	probe := options.Runtime.Probe
 
 	buf.WriteString("## Build\n")
-	buf.WriteString(fmt.Sprintf("FROM ghcr.io/leliuga/:%v-alpine AS build\n\n", options.BuildInfo.GoVersion))
+	buf.WriteString(fmt.Sprintf("FROM %s:%v-alpine AS build\n\n", service.DefaultGolangImage, options.BuildInfo.GoVersion))
 	buf.WriteString("ARG TARGETOS TARGETARCH\n")
 	buf.WriteString("RUN apk add --update --no-cache git build-base\n")
 	buf.WriteString("WORKDIR /src\n")
@@ -56,7 +56,7 @@ func containerFile(options *service.Options) string {
 	buf.WriteString("RUN --mount=type=cache,target=/go/src --mount=type=cache,target=/root/.cache/go-build OS=$TARGETOS ARCH=$TARGETARCH make " + serviceName + "\n\n")
 
 	buf.WriteString("## Deployment\n")
-	buf.WriteString(fmt.Sprintf("FROM %s AS final\n\n", service.DefaultBaseImage))
+	buf.WriteString(fmt.Sprintf("FROM %s:latest AS final\n\n", service.DefaultBaseImage))
 
 	for _, key := range labels.Keys() {
 		buf.WriteString("LABEL " + key + "=\"" + labels[key] + "\"\n")

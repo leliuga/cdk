@@ -30,7 +30,8 @@ const (
 	DefaultEnableTrustedProxyCheck = false
 	DefaultCompressedFileSuffix    = ".gz"
 
-	DefaultConfigDirectory = "/etc/leliuga/"
+	DefaultConfigDirectory = "/etc/leliuga"
+	DefaultConfigFile      = "config.yaml"
 )
 
 // Default paths for the service
