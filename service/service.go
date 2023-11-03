@@ -13,8 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/leliuga/cdk/service/middleware/requestid"
-	"github.com/leliuga/cdk/types"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"k8s.io/klog/v2"
 )
 
@@ -26,7 +25,7 @@ const (
 
 // NewService creates a new service.
 func NewService(options *Options) *Service {
-	s := &Service{
+	return &Service{
 		Options: options,
 		App: fiber.New(fiber.Config{
 			ServerHeader:                 strings.ToLower(options.Name),
@@ -51,7 +50,7 @@ func NewService(options *Options) *Service {
 			DisableDefaultDate:           false,
 			DisableDefaultContentType:    false,
 			DisableHeaderNormalizing:     false,
-			DisableStartupMessage:        true,
+			DisableStartupMessage:        options.DisableStartupMessage,
 			AppName:                      options.Name,
 			StreamRequestBody:            false,
 			DisablePreParseMultipartForm: false,
@@ -67,32 +66,11 @@ func NewService(options *Options) *Service {
 			RequestMethods:               fiber.DefaultMethods,
 		}),
 	}
-
-	s.Use(
-		recover.New(),
-		compress.New(compress.Config{
-			Level: compress.LevelBestSpeed,
-		}),
-		requestid.New(),
-		etag.New(),
-	)
-
-	s.Get(DefaultPathMonitoring, func(c *fiber.Ctx) error {
-		return c.JSON(types.Map[string]{
-			"status": "ok",
-		})
-	})
-
-	if options.Handlers != nil {
-		s.Handlers.Init(s)
-	}
-
-	return s
 }
 
 // Serve the service
 func (s *Service) Serve() error {
-	if err := s.Start(); err != nil {
+	if err := s.start(); err != nil {
 		return err
 	}
 
@@ -105,7 +83,11 @@ func (s *Service) Serve() error {
 	ctx, cancel := context.WithTimeout(context.Background(), s.ShutdownTimeout)
 	defer cancel()
 
-	if err := s.Shutdown(); err != nil {
+	if err := s.Kernel.Shutdown(ctx); err != nil {
+		return err
+	}
+
+	if err := s.ShutdownWithContext(ctx); err != nil {
 		return err
 	}
 
@@ -114,10 +96,23 @@ func (s *Service) Serve() error {
 	return nil
 }
 
-// Start the service
-func (s *Service) Start() error {
-	klog.InfoS("the service is serving", "name", s.Options.Name, "port", s.Port)
+// start the service
+func (s *Service) start() error {
+	if err := s.Kernel.Boot(s); err != nil {
+		return err
+	}
+
+	s.Use(
+		recover.New(),
+		compress.New(compress.Config{
+			Level: compress.LevelBestSpeed,
+		}),
+		requestid.New(),
+		etag.New(),
+	)
+
 	go func() {
+		klog.InfoS("the service is serving", "name", s.Options.Name, "port", s.Port)
 		address := fmt.Sprintf(":%d", s.Port)
 
 		if s.CertificateFile != "" && s.CertificateKeyFile != "" {

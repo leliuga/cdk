@@ -2,10 +2,12 @@
 package service
 
 import (
+	"context"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/leliuga/cdk/database"
+	"github.com/leliuga/cdk/types"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -35,12 +37,13 @@ type (
 		WriteBufferSize         int                           `json:"write_buffer_size"`
 		EnableTrustedProxyCheck bool                          `json:"enable_trusted_proxy_check"`
 		TrustedProxies          []string                      `json:"trusted_proxies"`
+		DisableStartupMessage   bool                          `json:"disable_startup_message"`
 		EnablePrintRoutes       bool                          `json:"enable_print_routes"`
 		BuildInfo               *BuildInfo                    `json:"build_info"`
 		Runtime                 *Runtime                      `json:"runtime"`
 		Database                *database.Options             `json:"database"`
 		ErrorHandler            func(*fiber.Ctx, error) error `json:"-"`
-		Handlers                IHandlers                     `json:"-"`
+		Kernel                  *Kernel                       `json:"-"`
 	}
 
 	// BuildInfo defines the build information for a Service.
@@ -82,6 +85,12 @@ type (
 		FailureThreshold    int32 `json:"failure_threshold"`
 	}
 
+	// Kernel represents the service kernel.
+	Kernel struct {
+		IKernel
+		Instances types.Map[any]
+	}
+
 	// Engine defines the engine for a Service runtime.
 	Engine uint8
 
@@ -94,8 +103,9 @@ type (
 	// Option represents the service option.
 	Option func(o *Options)
 
-	// IHandlers represents the service handlers interface.
-	IHandlers interface {
-		Init(*Service)
+	// IKernel represents the service kernel interface.
+	IKernel interface {
+		Boot(*Service) error
+		Shutdown(context.Context) error
 	}
 )

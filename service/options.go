@@ -47,11 +47,13 @@ func NewOptions(option ...Option) *Options {
 		ReadBufferSize:          DefaultReadBufferSize,
 		WriteBufferSize:         DefaultWriteBufferSize,
 		EnableTrustedProxyCheck: DefaultEnableTrustedProxyCheck,
+		DisableStartupMessage:   false,
+		EnablePrintRoutes:       true,
 		TrustedProxies:          []string{},
 		BuildInfo:               NewBuildInfo("", "", ""),
 		Runtime:                 NewRuntime(),
 		ErrorHandler:            fiber.DefaultErrorHandler,
-		Handlers:                nil,
+		Kernel:                  NewKernel(),
 	}
 
 	for _, o := range option {
@@ -181,6 +183,13 @@ func WithTrustedProxies(value []string) Option {
 	}
 }
 
+// WithDisableStartupMessage sets the disable startup message for the service.
+func WithDisableStartupMessage(value bool) Option {
+	return func(o *Options) {
+		o.DisableStartupMessage = value
+	}
+}
+
 // WithEnablePrintRoutes sets the enable print routes for the service.
 func WithEnablePrintRoutes(value bool) Option {
 	return func(o *Options) {
@@ -216,9 +225,9 @@ func WithErrorHandler(value func(*fiber.Ctx, error) error) Option {
 	}
 }
 
-// WithHandlers sets the handlers for the service.
-func WithHandlers(value IHandlers) Option {
+// WithKernel sets the kernel for the service.
+func WithKernel(value *Kernel) Option {
 	return func(o *Options) {
-		o.Handlers = value
+		o.Kernel = value
 	}
 }
