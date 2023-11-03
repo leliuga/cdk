@@ -226,7 +226,7 @@ func WithErrorHandler(value func(*fiber.Ctx, error) error) Option {
 }
 
 // WithKernel sets the kernel for the service.
-func WithKernel(value *Kernel) Option {
+func WithKernel(value IKernel) Option {
 	return func(o *Options) {
 		o.Kernel = value
 	}
