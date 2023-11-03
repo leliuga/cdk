@@ -1,9 +1,15 @@
 package service
 
 import (
+	"fmt"
+	"os"
+	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/goccy/go-json"
+	"github.com/goccy/go-yaml"
 	"github.com/gofiber/fiber/v2"
 	"github.com/leliuga/cdk/database"
 )
@@ -23,6 +29,8 @@ const (
 	DefaultWriteBufferSize         = 4 * 1024
 	DefaultEnableTrustedProxyCheck = false
 	DefaultCompressedFileSuffix    = ".gz"
+
+	DefaultConfigDirectory = "/etc/leliuga/"
 )
 
 // Default paths for the service
@@ -64,6 +72,39 @@ func NewOptions(option ...Option) *Options {
 	return &options
 }
 
+// NewOptionsFromConfig creates a new options from config.
+func NewOptionsFromConfig(cfgName, name string, buildInfo *BuildInfo, kernel IKernel) (*Options, error) {
+	opts := NewOptions(
+		WithKernel(kernel),
+	)
+
+	filename := strings.ToLower(path.Join(DefaultConfigDirectory, name, cfgName))
+	ext := filepath.Ext(filename)
+
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	switch ext {
+	case ".yaml", ".yml":
+		if err = yaml.UnmarshalWithOptions(content, opts, yaml.UseJSONUnmarshaler()); err != nil {
+			return nil, err
+		}
+	case ".json":
+		if err = json.Unmarshal(content, opts); err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("unsupported config file extension: %s", ext)
+	}
+
+	opts.Name = name
+	opts.BuildInfo = buildInfo
+
+	return opts, nil
+}
+
 // WithName sets the name for the service.
 func WithName(value string) Option {
 	return func(o *Options) {
@@ -89,7 +130,7 @@ func WithNetwork(value string) Option {
 // WithDomain sets the domain for the service.
 func WithDomain(value string) Option {
 	return func(o *Options) {
-		o.Domain = value
+		o.Domain = strings.ToLower(value)
 	}
 }
 
@@ -178,9 +219,9 @@ func WithEnableTrustedProxyCheck(value bool) Option {
 }
 
 // WithTrustedProxies sets the trusted proxies for the service.
-func WithTrustedProxies(value []string) Option {
+func WithTrustedProxies(values []string) Option {
 	return func(o *Options) {
-		o.TrustedProxies = value
+		o.TrustedProxies = values
 	}
 }
 
