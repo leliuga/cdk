@@ -17,7 +17,8 @@ const (
 // NewOptions returns new options.
 func NewOptions(option ...Option) *Options {
 	options := Options{
-		Dsn:                   types.URI{},
+		SourcesDsn:            []types.URI{},
+		ReplicasDsn:           []types.URI{},
 		Options:               types.NewMap[string](),
 		MaxOpenConnections:    DefaultMaxOpenConnections,
 		MaxIdleConnections:    DefaultMaxIdleConnections,
@@ -32,10 +33,17 @@ func NewOptions(option ...Option) *Options {
 	return &options
 }
 
-// WithDSN sets the dsn for the storage.
-func WithDSN(value string) Option {
+// WithSourcesDsn sets the sources dsn for the storage.
+func WithSourcesDsn(value []types.URI) Option {
 	return func(o *Options) {
-		o.Dsn = types.ParseURI(value)
+		o.SourcesDsn = value
+	}
+}
+
+// WithReplicasDsn sets the replicas dsn for the storage.
+func WithReplicasDsn(value []types.URI) Option {
+	return func(o *Options) {
+		o.ReplicasDsn = value
 	}
 }
 

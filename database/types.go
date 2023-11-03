@@ -10,7 +10,8 @@ import (
 type (
 	// Options represents the storage options.
 	Options struct {
-		Dsn                   types.URI         `json:"dsn"`
+		SourcesDsn            []types.URI       `json:"sources_dsn"`
+		ReplicasDsn           []types.URI       `json:"replicas_dsn"`
 		Options               types.Map[string] `json:"options"`
 		MaxOpenConnections    int               `json:"max_open_connections"`
 		MaxIdleConnections    int               `json:"max_idle_connections"`
