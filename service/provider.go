@@ -57,7 +57,7 @@ func (p Provider) Validate() bool {
 func ParseProvider(value string) Provider {
 	value = strings.ToLower(value)
 	for k, v := range ProviderNames {
-		if strings.ToLower(v) == v {
+		if strings.ToLower(v) == value {
 			return k
 		}
 	}

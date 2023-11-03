@@ -54,6 +54,7 @@ func NewOptions(option ...Option) *Options {
 		Runtime:                 NewRuntime(),
 		ErrorHandler:            fiber.DefaultErrorHandler,
 		Kernel:                  NewKernel(),
+		Database:                database.NewOptions(),
 	}
 
 	for _, o := range option {
