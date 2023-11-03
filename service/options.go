@@ -78,7 +78,7 @@ func NewOptionsFromConfig(cfgName, name string, buildInfo *BuildInfo, kernel IKe
 		WithKernel(kernel),
 	)
 
-	filename := strings.ToLower(path.Join(DefaultConfigDirectory, strings.ToLower(name), cfgName))
+	filename := strings.ToLower(path.Join(DefaultConfigDirectory, name, cfgName))
 	ext := filepath.Ext(filename)
 
 	content, err := os.ReadFile(filename)
