@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"path"
 	"strings"
 
 	compose "github.com/compose-spec/compose-go/types"
@@ -62,10 +63,10 @@ func kubernetesDeploymentNative(options *service.Options) string {
 	servicePortName := "http"
 	labelPrefix := strings.ToLower("service." + service.DefaultDomain + "/")
 	labels := types.Map[string]{
-		labelPrefix + "application": service.DefaultApplicationName,
-		labelPrefix + "name":        options.Name,
-		labelPrefix + "domain":      options.Domain,
-		labelPrefix + "vendor":      service.DefaultVendor,
+		labelPrefix + "application": strings.ToLower(service.DefaultApplicationName),
+		labelPrefix + "name":        strings.ToLower(options.Name),
+		labelPrefix + "domain":      strings.ToLower(options.Domain),
+		labelPrefix + "vendor":      strings.ToLower(service.DefaultVendor),
 		labelPrefix + "repository":  options.BuildInfo.Repository,
 		labelPrefix + "version":     options.BuildInfo.Commit,
 		labelPrefix + "go":          options.BuildInfo.GoVersion,
@@ -78,6 +79,14 @@ func kubernetesDeploymentNative(options *service.Options) string {
 		labelPrefix + "name":        labels[labelPrefix+"name"],
 	}
 
+	secret, _ := yaml.MarshalWithOptions(corev1.Secret{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Secret"},
+		ObjectMeta: metav1.ObjectMeta{Name: instanceName, Namespace: options.Runtime.Namespace, Labels: labels},
+		StringData: map[string]string{
+			service.DefaultConfigFile: "",
+		},
+	})
+
 	deploy, _ := yaml.MarshalWithOptions(appsv1.Deployment{
 		TypeMeta:   metav1.TypeMeta{APIVersion: "apps/v1", Kind: "Deployment"},
 		ObjectMeta: metav1.ObjectMeta{Name: instanceName, Namespace: options.Runtime.Namespace, Labels: labels},
@@ -87,10 +96,26 @@ func kubernetesDeploymentNative(options *service.Options) string {
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{Name: instanceName, Namespace: options.Runtime.Namespace, Labels: labels},
 				Spec: corev1.PodSpec{
+					Volumes: []corev1.Volume{
+						{
+							Name: instanceName + "-secret",
+							VolumeSource: corev1.VolumeSource{
+								Secret: &corev1.SecretVolumeSource{
+									SecretName: instanceName,
+									Items: []corev1.KeyToPath{
+										{
+											Key:  service.DefaultConfigFile,
+											Path: service.DefaultConfigFile,
+										},
+									},
+								},
+							},
+						},
+					},
 					Containers: []corev1.Container{
 						{
 							Name:  instanceName,
-							Image: imageName(options, "latest"),
+							Image: imageName(options, options.BuildInfo.Commit),
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          servicePortName,
@@ -99,6 +124,12 @@ func kubernetesDeploymentNative(options *service.Options) string {
 								},
 							},
 							Resources: options.Runtime.ToResourceRequirements(),
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      instanceName + "-secret",
+									MountPath: path.Join(service.DefaultConfigDirectory, strings.ToLower(options.Name), service.DefaultConfigFile),
+								},
+							},
 							LivenessProbe: &corev1.Probe{
 								ProbeHandler:        corev1.ProbeHandler{HTTPGet: &corev1.HTTPGetAction{Path: service.DefaultPathMonitoring, Port: intstr.FromInt32(options.Port), Scheme: corev1.URISchemeHTTP}},
 								InitialDelaySeconds: options.Runtime.Probe.InitialDelaySeconds,
@@ -136,7 +167,7 @@ func kubernetesDeploymentNative(options *service.Options) string {
 		},
 	}, yaml.UseJSONMarshaler())
 
-	return fmt.Sprintf("%s---\n%s", deploy, svc)
+	return fmt.Sprintf("%s---\n%s---\n%s", secret, deploy, svc)
 }
 
 func kubernetesDeploymentTerraform(options *service.Options) string {
@@ -152,10 +183,10 @@ func dockerSwarmDeploymentNative(options *service.Options) string {
 
 	labelPrefix := strings.ToLower("service." + service.DefaultDomain + "/")
 	labels := compose.Labels{
-		labelPrefix + "application": service.DefaultApplicationName,
-		labelPrefix + "name":        options.Name,
-		labelPrefix + "domain":      options.Domain,
-		labelPrefix + "vendor":      service.DefaultVendor,
+		labelPrefix + "application": strings.ToLower(service.DefaultApplicationName),
+		labelPrefix + "name":        strings.ToLower(options.Name),
+		labelPrefix + "domain":      strings.ToLower(options.Domain),
+		labelPrefix + "vendor":      strings.ToLower(service.DefaultVendor),
 		labelPrefix + "repository":  options.BuildInfo.Repository,
 		labelPrefix + "version":     options.BuildInfo.Commit,
 		labelPrefix + "go":          options.BuildInfo.GoVersion,
@@ -184,7 +215,7 @@ func dockerSwarmDeploymentNative(options *service.Options) string {
 					},
 				},
 				Hostname: instanceName,
-				Image:    imageName(options, "latest"),
+				Image:    imageName(options, options.BuildInfo.Commit),
 				Labels:   labels,
 				Logging: &compose.LoggingConfig{
 					Driver: "json-file",

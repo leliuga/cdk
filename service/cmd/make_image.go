@@ -22,7 +22,7 @@ func NewMakeOciImageCmd(options *service.Options) *cobra.Command {
 		Long:    `Make a OCI image for the service ` + options.Name,
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			p := exec.Command("docker", "build", "--platform", options.BuildInfo.Platform, "--build-arg", "INIT="+os.Getenv("INIT"), "-t", imageTag, "-t", imageTagLatest, "--push", "-f", "-", ".")
+			p := exec.Command("docker", "build", "--platform", options.BuildInfo.Platform, "-t", imageTag, "-t", imageTagLatest, "--push", "-f", "-", ".")
 			p.Stdin = strings.NewReader(containerFile(options))
 			p.Stdout = os.Stdout
 			p.Stderr = os.Stderr

@@ -39,11 +39,17 @@ const (
 
 // Default values for the image
 const (
-	// DefaultBaseImage is the default base image for the service container
-	DefaultBaseImage = "ghcr.io/leliuga/base:latest"
+	// DefaultImageVendor is the default image vendor for the service container
+	DefaultImageVendor = "ghcr.io/leliuga"
 
 	// DefaultImagePrefix is the default image prefix for the service container
-	DefaultImagePrefix = "leliuga/service"
+	DefaultImagePrefix = DefaultImageVendor + "/service"
+
+	// DefaultBaseImage is the default base image for the service container
+	DefaultBaseImage = DefaultImageVendor + "/base"
+
+	// DefaultGolangImage is the default golang image for the service container
+	DefaultGolangImage = DefaultImageVendor + "/golang"
 )
 
 // NewRuntime creates a new Runtime.
