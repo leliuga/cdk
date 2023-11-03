@@ -9,19 +9,19 @@ import (
 )
 
 // NewOptions returns new options.
-func NewOptions(option ...Option) *Options {
-	options := Options{
+func NewOptions(options ...Option) *Options {
+	opts := Options{
 		ID:         uuid.New().String(),
 		Attributes: types.NewMap[string](),
 		Data:       []byte{},
 		Happen:     types.DateTime{Time: time.Now()},
 	}
 
-	for _, o := range option {
-		o(&options)
+	for _, option := range options {
+		option(&opts)
 	}
 
-	return &options
+	return &opts
 }
 
 // WithID sets the id for the event.

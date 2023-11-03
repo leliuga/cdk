@@ -15,8 +15,8 @@ const (
 )
 
 // NewOptions returns new options.
-func NewOptions(option ...Option) *Options {
-	options := Options{
+func NewOptions(options ...Option) *Options {
+	opts := Options{
 		SourcesDsn:            []types.URI{},
 		ReplicasDsn:           []types.URI{},
 		Options:               types.NewMap[string](),
@@ -26,11 +26,11 @@ func NewOptions(option ...Option) *Options {
 		MaxIdleTimeConnection: DefaultMaxIdleTimeConnection,
 	}
 
-	for _, o := range option {
-		o(&options)
+	for _, option := range options {
+		option(&opts)
 	}
 
-	return &options
+	return &opts
 }
 
 // WithSourcesDsn sets the sources dsn for the storage.

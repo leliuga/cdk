@@ -5,14 +5,14 @@ import (
 )
 
 // NewOptions creates a new options.
-func NewOptions(option ...Option) *Options {
-	options := Options{}
+func NewOptions(options ...Option) *Options {
+	opts := Options{}
 
-	for _, o := range option {
-		o(&options)
+	for _, option := range options {
+		option(&opts)
 	}
 
-	return &options
+	return &opts
 }
 
 // WithDirectory sets the directory for the options.

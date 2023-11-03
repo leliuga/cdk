@@ -40,12 +40,12 @@ const (
 )
 
 // NewOptions creates a new options.
-func NewOptions(option ...Option) *Options {
-	options := Options{
+func NewOptions(options ...Option) *Options {
+	opts := Options{
 		Name:                    DefaultName,
 		Port:                    DefaultPort,
 		Network:                 DefaultNetwork,
-		Domain:                  DefaultDomain,
+		Domain:                  strings.ToLower(DefaultName + "." + DefaultDomain),
 		BodyLimit:               DefaultBodyLimit,
 		Concurrency:             DefaultConcurrency,
 		ReadTimeout:             DefaultReadTimeout,
@@ -65,20 +65,20 @@ func NewOptions(option ...Option) *Options {
 		Database:                database.NewOptions(),
 	}
 
-	for _, o := range option {
-		o(&options)
+	for _, option := range options {
+		option(&opts)
 	}
 
-	return &options
+	return &opts
 }
 
 // NewOptionsFromConfig creates a new options from config.
-func NewOptionsFromConfig(cfgName, name string, buildInfo *BuildInfo, kernel IKernel) (*Options, error) {
+func NewOptionsFromConfig(cfgName string, options ...Option) (*Options, error) {
 	opts := NewOptions(
-		WithKernel(kernel),
+		options...,
 	)
 
-	filename := strings.ToLower(path.Join(DefaultConfigDirectory, name, cfgName))
+	filename := strings.ToLower(path.Join(DefaultConfigDirectory, opts.Name, cfgName))
 	ext := filepath.Ext(filename)
 
 	content, err := os.ReadFile(filename)
@@ -99,9 +99,6 @@ func NewOptionsFromConfig(cfgName, name string, buildInfo *BuildInfo, kernel IKe
 		return nil, fmt.Errorf("unsupported config file extension: %s", ext)
 	}
 
-	opts.Name = name
-	opts.BuildInfo = buildInfo
-
 	return opts, nil
 }
 
@@ -109,7 +106,7 @@ func NewOptionsFromConfig(cfgName, name string, buildInfo *BuildInfo, kernel IKe
 func WithName(value string) Option {
 	return func(o *Options) {
 		o.Name = value
-		o.Domain = strings.ToLower(value) + "." + DefaultDomain
+		o.Domain = strings.ToLower(value + "." + DefaultDomain)
 	}
 }
 
