@@ -15,14 +15,29 @@ type (
 	// Map defines a map of key:value. It implements Map.
 	Map[T any] map[string]T
 
+	// Option represents the ui option.
+	Option struct {
+		Name        string   `json:"name"`
+		Description string   `json:"description"`
+		Required    bool     `json:"required"`
+		Type        Type     `json:"type"`
+		Default     any      `json:"default"`
+		Min         any      `json:"min,omitempty"`
+		Max         any      `json:"max,omitempty"`
+		Choices     []string `json:"choices,omitempty"`
+	}
+
 	// URI represents the URI.
 	URI struct {
 		url.URL
 	}
 
-	// ContentType represents the event data mime type.
+	// Options represents the options.
+	Options []*Option
+
+	// ContentType represents the content type.
 	ContentType uint8
 
-	// Type represents the event type.
+	// Type represents the data type.
 	Type uint8
 )
