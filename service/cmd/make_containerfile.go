@@ -57,6 +57,8 @@ func containerFile(options *service.Options) string {
 
 	buf.WriteString("## Deployment\n")
 	buf.WriteString(fmt.Sprintf("FROM %s:latest AS final\n\n", service.DefaultBaseImage))
+	buf.WriteString("ARG INIT\n")
+	buf.WriteString("ENV INIT=$INIT\n")
 
 	for _, key := range labels.Keys() {
 		buf.WriteString("LABEL " + key + "=\"" + labels[key] + "\"\n")

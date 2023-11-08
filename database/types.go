@@ -10,13 +10,13 @@ import (
 type (
 	// Options represents the storage options.
 	Options struct {
-		SourcesDsn            []types.URI       `json:"sources_dsn"`
-		ReplicasDsn           []types.URI       `json:"replicas_dsn"`
-		Options               types.Map[string] `json:"options"`
-		MaxOpenConnections    int               `json:"max_open_connections"`
-		MaxIdleConnections    int               `json:"max_idle_connections"`
-		MaxLifetimeConnection time.Duration     `json:"max_lifetime_connection"`
-		MaxIdleTimeConnection time.Duration     `json:"max_idle_time_connection"`
+		SourcesDsn            types.Map[types.URI] `json:"sources_dsn"              env:"SOURCES_DSN"`
+		ReplicasDsn           types.Map[types.URI] `json:"replicas_dsn"             env:"REPLICAS_DSN"`
+		MaxOpenConnections    int                  `json:"max_open_connections"     env:"MAX_OPEN_CONNECTIONS"`
+		MaxIdleConnections    int                  `json:"max_idle_connections"     env:"MAX_IDLE_CONNECTIONS"`
+		MaxLifetimeConnection time.Duration        `json:"max_lifetime_connection"  env:"MAX_LIFETIME_CONNECTION"`
+		MaxIdleTimeConnection time.Duration        `json:"max_idle_time_connection" env:"MAX_IDLE_TIME_CONNECTION"`
+		Options               types.Map[string]    `json:"options"`
 	}
 
 	// Schema defines a single storage schema structure.
