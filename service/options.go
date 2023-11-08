@@ -11,6 +11,7 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/goccy/go-yaml"
 	"github.com/gofiber/fiber/v2"
+	"github.com/leliuga/cdk/configurator"
 	"github.com/leliuga/cdk/database"
 )
 
@@ -70,6 +71,8 @@ func NewOptions(options ...Option) *Options {
 		option(&opts)
 	}
 
+	configurator.FromEnv(&opts, "")
+
 	return &opts
 }
 
@@ -108,6 +111,13 @@ func WithName(value string) Option {
 	return func(o *Options) {
 		o.Name = value
 		o.Domain = strings.ToLower(value + "." + DefaultDomain)
+	}
+}
+
+// WithDescription sets the description for the service.
+func WithDescription(value string) Option {
+	return func(o *Options) {
+		o.Description = value
 	}
 }
 

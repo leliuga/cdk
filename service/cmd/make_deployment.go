@@ -85,7 +85,7 @@ func kubernetesDeploymentNative(options *service.Options) string {
 		StringData: map[string]string{
 			service.DefaultConfigFile: "",
 		},
-	})
+	}, yaml.UseJSONMarshaler())
 
 	deploy, _ := yaml.MarshalWithOptions(appsv1.Deployment{
 		TypeMeta:   metav1.TypeMeta{APIVersion: "apps/v1", Kind: "Deployment"},

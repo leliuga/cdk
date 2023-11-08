@@ -19,8 +19,9 @@ func NewMakeCmd(options *service.Options) *cobra.Command {
 
 	cmd.AddCommand(
 		NewMakeContainerFileCmd(options),
-		NewMakeOciImageCmd(options),
 		NewMakeDeploymentCmd(options),
+		NewMakeEnvCmd(options),
+		NewMakeOciImageCmd(options),
 	)
 
 	return cmd
