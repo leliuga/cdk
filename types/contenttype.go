@@ -64,31 +64,31 @@ func (ct *ContentType) UnmarshalJSON(data []byte) error {
 }
 
 // Marshal returns the ContentType as a []byte.
-func (ct ContentType) Marshal(data any) (io.Reader, error) {
+func (ct ContentType) Marshal(in any) (io.Reader, error) {
 	buffer := bytes.NewBuffer(nil)
 	switch ct {
 	case ContentTypeJson:
-		if err := json.NewEncoder(buffer).Encode(data); err != nil {
+		if err := json.NewEncoder(buffer).Encode(in); err != nil {
 			return nil, err
 		}
 	case ContentTypeMsgPack:
-		if err := msgpack.NewEncoder(buffer).Encode(data); err != nil {
+		if err := msgpack.NewEncoder(buffer).Encode(in); err != nil {
 			return nil, err
 		}
 	case ContentTypeYaml:
-		if err := yaml.NewEncoder(buffer).Encode(data); err != nil {
+		if err := yaml.NewEncoder(buffer).Encode(in); err != nil {
 			return nil, err
 		}
 	case ContentTypeHtml, ContentTypePlain:
-		buffer.WriteString(fmt.Sprintf("%v", data))
+		buffer.WriteString(fmt.Sprintf("%v", in))
 	case ContentTypeFormUrlEncoded:
-		switch data.(type) {
+		switch in.(type) {
 		case string:
-			buffer.WriteString(data.(string))
+			buffer.WriteString(in.(string))
 		case url.Values:
-			buffer.WriteString(data.(url.Values).Encode())
+			buffer.WriteString(in.(url.Values).Encode())
 		default:
-			return nil, fmt.Errorf("a data type %T is invalid", data)
+			return nil, fmt.Errorf("a data type %T is invalid", in)
 		}
 	}
 
