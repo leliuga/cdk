@@ -27,15 +27,33 @@ func (t *EncoderRoundTripper) RoundTrip(req *http.Request) (response *http.Respo
 	req.Header.Set("Accept-Encoding", "gzip, br")
 
 	if req.Body != nil {
-		if rawBody, err := io.ReadAll(req.Body); err == nil {
-			var encodedBody bytes.Buffer
-			writer := brotli.NewWriter(&encodedBody)
-			writer.Write(rawBody)
-			writer.Close()
+		if ce := req.Header.Get("Content-Encoding"); ce == "br" || ce == "gzip" {
+			var (
+				rawBody     []byte
+				encodedBody bytes.Buffer
+				writer      io.WriteCloser
+			)
+
+			rawBody, err = io.ReadAll(req.Body)
+			if err != nil {
+				return nil, errors.Errorf("failed to read request body: %s", err)
+			}
+
+			writer = brotli.NewWriter(&encodedBody)
+			if ce == "gzip" {
+				writer = gzip.NewWriter(&encodedBody)
+			}
+
+			if _, err = writer.Write(rawBody); err != nil {
+				return nil, err
+			}
+
+			if err = writer.Close(); err != nil {
+				return nil, err
+			}
 
 			req.Body = io.NopCloser(&encodedBody)
 			req.ContentLength = int64(encodedBody.Len())
-			req.Header.Set("Content-Encoding", "br")
 		}
 	}
 
@@ -44,18 +62,18 @@ func (t *EncoderRoundTripper) RoundTrip(req *http.Request) (response *http.Respo
 		return response, err
 	}
 
+	if response.Header.Get("Content-Encoding") == "br" {
+		response.Body = io.NopCloser(
+			brotli.NewReader(response.Body),
+		)
+	}
+
 	if response.Header.Get("Content-Encoding") == "gzip" {
 		r, err := gzip.NewReader(response.Body)
 		if err != nil {
 			return nil, errors.Errorf("failed to read response body: %s", err)
 		}
 		response.Body = r
-	}
-
-	if response.Header.Get("Content-Encoding") == "br" {
-		response.Body = io.NopCloser(
-			brotli.NewReader(response.Body),
-		)
 	}
 
 	return response, err

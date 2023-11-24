@@ -35,11 +35,27 @@ func NewStringOption(name string, description string, required bool, def string,
 }
 
 // NewOptions creates a new Options instance.
-func NewOptions(options ...*Option) *Options {
-	opts := &Options{}
+func NewOptions(options ...*Option) Options {
+	opts := Options{}
 	for _, option := range options {
-		*opts = append(*opts, option)
+		opts = append(opts, option)
 	}
 
 	return opts
+}
+
+// Len returns the length of the options.
+func (o Options) Len() int {
+	return len(o)
+}
+
+// Index returns the index of the option with the given name.
+func (o Options) Index(name string) int {
+	for index, option := range o {
+		if option.Name == name {
+			return index
+		}
+	}
+
+	return -1
 }
