@@ -27,7 +27,7 @@ const (
 // NewOptions creates a new options.
 func NewOptions(options ...Option) *Options {
 	opts := Options{
-		Dsn:                   types.URI{},
+		BaseUri:               types.URI{},
 		Headers:               http.Header{},
 		MaxIdleConnections:    DefaultMaxIdleConnections,
 		MaxConnectionsPerHost: DefaultMaxConnectionsPerHost,
@@ -50,10 +50,10 @@ func NewOptions(options ...Option) *Options {
 	return &opts
 }
 
-// WithDsn sets the dsn.
-func WithDsn(value string) Option {
+// WithBaseUri sets the dsn.
+func WithBaseUri(value string) Option {
 	return func(o *Options) {
-		o.Dsn = types.ParseURI(value)
+		o.BaseUri = types.ParseURI(value)
 	}
 }
 

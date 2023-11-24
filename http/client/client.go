@@ -8,6 +8,7 @@ import (
 	"net"
 	nethttp "net/http"
 	"strings"
+	"time"
 
 	"github.com/leliuga/cdk/http"
 	"github.com/leliuga/cdk/http/schema"
@@ -85,7 +86,7 @@ func (c *Client) Do(endpoint *schema.Endpoint) (*Response, error) {
 	if err = endpoint.Expect.Validate(res.Status(), res.Headers()); err != nil {
 		b, _ := io.ReadAll(res.Body())
 
-		return nil, errors.Errorf("%s The res contains - %s", err, string(b))
+		return nil, errors.Errorf("%s The response contains - %s", err, string(b))
 	}
 
 	return res, nil
@@ -95,7 +96,7 @@ func (c *Client) Do(endpoint *schema.Endpoint) (*Response, error) {
 func (c *Client) newRequest(method http.Method, path string, payload any) (req *nethttp.Request, err error) {
 	var reader io.Reader
 	ctx := context.Background()
-	url := c.Dsn.String() + path
+	url := c.BaseUri.String() + path
 
 	if payload != nil {
 		cType := c.Headers.Get("Content-Type")
@@ -175,4 +176,24 @@ func uniqueStrings(input []string) []string {
 	}
 
 	return uniqueSlice
+}
+
+// Download downloads a file.
+func Download(dsn types.URI, filename string) error {
+	res, err := NewClient(NewOptions(
+		WithBaseUri(dsn.Scheme + "://" + dsn.Hostname()),
+	)).Do(
+		schema.NewEndpoint("Download file", http.MethodGet, dsn.Path),
+	)
+
+	if err != nil {
+		return err
+	}
+	defer res.Close()
+
+	progress := NewProgress(filename, uint64(res.ContentLength()))
+	progress.Start(1 + time.Second)
+	defer progress.Stop()
+
+	return res.Save(filename, progress)
 }

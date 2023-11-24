@@ -38,7 +38,7 @@ type (
 
 	// Options is an HTTP client options.
 	Options struct {
-		Dsn                   types.URI      `json:"dsn"`
+		BaseUri               types.URI      `json:"base_uri"`
 		Headers               nethttp.Header `json:"headers"`
 		ProxyURL              types.URI      `json:"proxy_url"`
 		MaxIdleConnections    int            `json:"max_idle_connections"`
