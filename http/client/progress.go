@@ -7,6 +7,7 @@ import (
 	"github.com/leliuga/cdk/types"
 )
 
+// NewProgress creates a new progress for a download.
 func NewProgress(name string, total uint64) *Progress {
 	return &Progress{
 		name:      name,
@@ -17,6 +18,7 @@ func NewProgress(name string, total uint64) *Progress {
 	}
 }
 
+// Start starts the progress.
 func (p *Progress) Start(frequency time.Duration) {
 	p.stopCh = make(chan struct{}, 1)
 	p.wg.Add(1)
@@ -37,12 +39,14 @@ func (p *Progress) Start(frequency time.Duration) {
 	}()
 }
 
+// Stop stops the progress.
 func (p *Progress) Stop() {
 	p.stopCh <- struct{}{}
 	p.wg.Wait()
 	p.stopCh = nil
 }
 
+// Write writes the progress.
 func (p *Progress) Write(b []byte) (int, error) {
 	n := len(b)
 	p.current += uint64(n)
@@ -50,6 +54,7 @@ func (p *Progress) Write(b []byte) (int, error) {
 	return n, nil
 }
 
+// report reports the progress.
 func (p *Progress) report() {
 	elapsed := time.Since(p.startTime).Seconds()
 	speed := float64(p.current) / 1024 / 1024 / elapsed

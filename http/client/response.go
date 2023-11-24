@@ -7,7 +7,6 @@ import (
 	"net/http/httputil"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/antchfx/htmlquery"
 	"github.com/leliuga/cdk/http"
@@ -43,23 +42,23 @@ func (r *Response) HtmlQuery(expression string) []*html.Node {
 }
 
 // Save saves the response body to the given filename.
-func (r *Response) Save(name string) error {
-	if err := os.MkdirAll(filepath.Dir(name), 0755); err != nil {
+func (r *Response) Save(filename string, progressWriter io.Writer) error {
+	if err := os.MkdirAll(filepath.Dir(filename), 0755); err != nil {
 		return err
 	}
 
-	f, err := os.Create(name)
+	f, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	progress := NewProgress(name, uint64(r.ContentLength()))
-	progress.Start(1 + time.Second)
-	defer progress.Stop()
+	if progressWriter == nil {
+		_, err = io.Copy(f, r.Body())
+		return err
+	}
 
-	_, err = io.Copy(f, io.TeeReader(r.Body(), progress))
-
+	_, err = io.Copy(f, io.TeeReader(r.Body(), progressWriter))
 	return err
 }
 
