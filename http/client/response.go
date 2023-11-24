@@ -42,7 +42,7 @@ func (r *Response) HtmlQuery(expression string) []*html.Node {
 }
 
 // Save saves the response body to the given filename.
-func (r *Response) Save(filename string, writer io.Writer) error {
+func (r *Response) Save(filename string, progressWriter io.Writer) error {
 	if err := os.MkdirAll(filepath.Dir(filename), 0755); err != nil {
 		return err
 	}
@@ -53,8 +53,12 @@ func (r *Response) Save(filename string, writer io.Writer) error {
 	}
 	defer f.Close()
 
-	_, err = io.Copy(f, io.TeeReader(r.Body(), writer))
+	if progressWriter == nil {
+		_, err = io.Copy(f, r.Body())
+		return err
+	}
 
+	_, err = io.Copy(f, io.TeeReader(r.Body(), progressWriter))
 	return err
 }
 
