@@ -1,5 +1,9 @@
 package types
 
+import (
+	"fmt"
+)
+
 // NewOption creates a new Option instance.
 func NewOption(name string, description string, required bool, t Type, def any, min any, max any, choices []string) *Option {
 	return &Option{
@@ -58,4 +62,25 @@ func (o Options) Index(name string) int {
 	}
 
 	return -1
+}
+
+// Arguments returns as process arguments.
+func (o Options) Arguments() []string {
+	var arguments []string
+	for _, option := range o {
+		switch option.Type {
+		case TypeBoolean:
+			if option.Default.(bool) {
+				arguments = append(arguments, option.Name)
+			}
+		case TypeFloat:
+			arguments = append(arguments, option.Name, fmt.Sprintf("%f", option.Default))
+		case TypeInteger:
+			arguments = append(arguments, option.Name, fmt.Sprintf("%d", option.Default))
+		default:
+			arguments = append(arguments, option.Name, fmt.Sprintf("%s", option.Default))
+		}
+	}
+
+	return arguments
 }
