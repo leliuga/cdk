@@ -77,13 +77,13 @@ func (o Options) Index(name string) int {
 }
 
 // Get returns the option with the given name.
-func (o Options) Get(name string) *Option {
+func (o Options) Get(name string) (*Option, error) {
 	index := o.Index(name)
 	if index == -1 {
-		return nil
+		return nil, fmt.Errorf("option %s not found", name)
 	}
 
-	return o[index]
+	return o[index], nil
 }
 
 // SetDefault sets the default value of the option with the given name.
