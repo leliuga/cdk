@@ -28,7 +28,7 @@ func (dt DateTime) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON parses DateTime from json.
 func (dt *DateTime) UnmarshalJSON(data []byte) error {
 	s := string(bytes.Trim(data, `"`))
-	if v := ParseTimestamp(s); v.Validate() {
+	if v := ParseDateTime(s); v.Validate() {
 		*dt = v
 	}
 
@@ -40,8 +40,13 @@ func (dt DateTime) Validate() bool {
 	return !dt.IsZero()
 }
 
-// ParseTimestamp parses DateTime from string.
-func ParseTimestamp(value string) DateTime {
+// DateTimeNow returns the current date and time.
+func DateTimeNow() DateTime {
+	return DateTime{Time: time.Now().UTC()}
+}
+
+// ParseDateTime parses DateTime from string.
+func ParseDateTime(value string) DateTime {
 	v, err := time.Parse(time.RFC3339, value)
 	if err != nil {
 		return DateTime{}
