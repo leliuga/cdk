@@ -76,6 +76,16 @@ func (o Options) Index(name string) int {
 	return -1
 }
 
+// Get returns the option with the given name.
+func (o Options) Get(name string) *Option {
+	index := o.Index(name)
+	if index == -1 {
+		return nil
+	}
+
+	return o[index]
+}
+
 // SetDefault sets the default value of the option with the given name.
 func (o Options) SetDefault(name string, value any) error {
 	index := o.Index(name)
@@ -157,6 +167,9 @@ func (o Options) SetDefault(name string, value any) error {
 func (o Options) ToSlice() []string {
 	var arguments []string
 	for _, option := range o {
+		if option.Default == nil || option.Default == "" {
+			continue
+		}
 		switch option.Type {
 		case TypeBoolean:
 			if option.Default.(bool) {
