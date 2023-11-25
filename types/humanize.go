@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// BytesSize returns a human readable bytes size.
 func BytesSize(n uint64) string {
 	switch {
 	case n < 1024:
