@@ -76,7 +76,7 @@ func (ct ContentType) Marshal(in any) (io.Reader, error) {
 			return nil, err
 		}
 	case ContentTypeYaml:
-		if err := yaml.NewEncoder(buffer).Encode(in); err != nil {
+		if err := yaml.NewEncoder(buffer, yaml.UseJSONMarshaler()).Encode(in); err != nil {
 			return nil, err
 		}
 	case ContentTypeHtml, ContentTypePlain:
@@ -103,7 +103,7 @@ func (ct ContentType) Unmarshal(r io.Reader, out any) error {
 	case ContentTypeMsgPack:
 		return msgpack.NewDecoder(r).Decode(out)
 	case ContentTypeYaml:
-		return yaml.NewDecoder(r).Decode(out)
+		return yaml.NewDecoder(r, yaml.UseJSONUnmarshaler()).Decode(out)
 	case ContentTypeHtml, ContentTypePlain, ContentTypeFormUrlEncoded:
 		b, err := io.ReadAll(r)
 		if err != nil {
