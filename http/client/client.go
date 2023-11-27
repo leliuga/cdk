@@ -59,12 +59,12 @@ func NewClient(options *Options) *Client {
 }
 
 // Do sends an HTTP request and returns an HTTP response.
-func (c *Client) Do(endpoint *schema.Endpoint) (*Response, error) {
+func (c *Client) Do(ctx context.Context, endpoint *schema.Endpoint) (*Response, error) {
 	for k, v := range endpoint.Headers {
 		c.Headers.Add(k.String(), v)
 	}
 
-	req, err := c.newRequest(endpoint.Method, endpoint.Path, endpoint.Payload)
+	req, err := c.newRequest(ctx, endpoint.Method, endpoint.Path, endpoint.Payload)
 	if err != nil {
 		return nil, err
 	}
@@ -93,9 +93,8 @@ func (c *Client) Do(endpoint *schema.Endpoint) (*Response, error) {
 }
 
 // newRequest creates a new HTTP request.
-func (c *Client) newRequest(method http.Method, path string, payload any) (req *nethttp.Request, err error) {
+func (c *Client) newRequest(ctx context.Context, method http.Method, path string, payload any) (req *nethttp.Request, err error) {
 	var reader io.Reader
-	ctx := context.Background()
 	url := c.BaseUri.String() + path
 
 	if payload != nil {
@@ -150,13 +149,6 @@ func (c *Client) newRequest(method http.Method, path string, payload any) (req *
 		req.Header.Set("User-Agent", fmt.Sprintf("%s/%d.%d", DefaultUserAgent, req.ProtoMajor, req.ProtoMinor))
 	}
 
-	//dump, err := httputil.DumpRequest(req, true)
-	//if err != nil {
-	//	fmt.Println("Error dumping request:", err)
-	//}
-	//
-	//fmt.Println(string(dump))
-
 	return req, nil
 }
 
@@ -179,12 +171,10 @@ func uniqueStrings(input []string) []string {
 }
 
 // Download downloads a file.
-func Download(dsn types.URI, filename string) error {
+func Download(ctx context.Context, dsn types.URI, filename string) error {
 	res, err := NewClient(NewOptions(
-		WithBaseUri(dsn.Scheme + "://" + dsn.Hostname()),
-	)).Do(
-		schema.NewEndpoint("Download file", http.MethodGet, dsn.Path),
-	)
+		WithBaseUri(dsn.Scheme+"://"+dsn.Hostname()),
+	)).Do(ctx, schema.NewEndpoint("Download file", http.MethodGet, dsn.Path))
 
 	if err != nil {
 		return err
