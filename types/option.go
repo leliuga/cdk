@@ -86,8 +86,17 @@ func (o Options) Get(name string) (*Option, error) {
 	return o[index], nil
 }
 
-// SetDefault sets the default value of the option with the given name.
-func (o Options) SetDefault(name string, value any) error {
+// DefaultValue returns the default value of the option with the given name.
+func (o Options) DefaultValue(name string, value any) any {
+	if index := o.Index(name); index != -1 {
+		return o[index].Default
+	}
+
+	return value
+}
+
+// SetDefaultValue sets the default value of the option with the given name.
+func (o Options) SetDefaultValue(name string, value any) error {
 	index := o.Index(name)
 	if index == -1 {
 		return fmt.Errorf("option %s not found", name)
