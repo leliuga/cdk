@@ -22,7 +22,7 @@ func NewClient(options *Options) *Client {
 	proxyURL := nethttp.ProxyFromEnvironment
 
 	if options.ProxyURL.Validate() {
-		proxyURL = nethttp.ProxyURL(&options.ProxyURL.URL)
+		proxyURL = nethttp.ProxyURL(options.ProxyURL.URL)
 	}
 
 	c := &Client{
@@ -61,26 +61,20 @@ func NewClient(options *Options) *Client {
 // Do sends an HTTP request and returns an HTTP response.
 func (c *Client) Do(ctx context.Context, endpoint *schema.Endpoint) (*Response, error) {
 	for k, v := range endpoint.Headers {
-		c.Headers.Add(k.String(), v)
+		c.Headers.Set(*k, v)
 	}
 
-	req, err := c.newRequest(ctx, endpoint.Method, endpoint.Path, endpoint.Payload)
+	req, err := c.newRequest(ctx, *endpoint.Method, endpoint.Path, endpoint.Payload)
 	if err != nil {
 		return nil, err
 	}
 
-	res := &Response{
-		headers: http.Headers{},
-	}
-
-	if res.response, err = c.client.Do(req); err != nil {
+	response, err := c.client.Do(req)
+	if err != nil {
 		return nil, err
 	}
 
-	for k, v := range res.response.Header {
-		res.headers[http.ParseHeader(k)] = strings.Join(v, ",")
-	}
-
+	res := FromResponse(response)
 	c.cookies = res.Cookies()
 
 	if err = endpoint.Expect.Validate(res.Status(), res.Headers()); err != nil {
@@ -93,20 +87,15 @@ func (c *Client) Do(ctx context.Context, endpoint *schema.Endpoint) (*Response, 
 }
 
 // newRequest creates a new HTTP request.
-func (c *Client) newRequest(ctx context.Context, method http.Method, path string, payload any) (req *nethttp.Request, err error) {
+func (c *Client) newRequest(ctx context.Context, method http.Method, path *types.Path, payload any) (req *nethttp.Request, err error) {
 	var reader io.Reader
-	url := c.BaseUri.String() + path
+	url := c.BaseUri.String() + path.String()
 
 	if payload != nil {
-		cType := c.Headers.Get("Content-Type")
-		ct := types.ParseContentType(cType)
-		if !ct.Validate() {
-			return nil, errors.Errorf("unsupported content type: %s", cType)
-		}
-
-		reader, err = ct.Marshal(payload)
+		contentType := c.Headers.Get(http.HeaderContentType)
+		reader, err = types.ContentTypeMarshal(contentType, payload)
 		if err != nil {
-			return nil, errors.Errorf("failed to marshal request payload as %s: %#v: %s", cType, payload, err)
+			return nil, errors.Errorf("failed to marshal request payload as %s: %#v: %s", contentType, payload, err)
 		}
 	}
 
@@ -115,7 +104,7 @@ func (c *Client) newRequest(ctx context.Context, method http.Method, path string
 		return nil, err
 	}
 
-	req.Header = c.Headers
+	req.Header = c.Headers.ToHeaders()
 	for _, cookie := range c.cookies {
 		req.AddCookie(cookie)
 	}
@@ -134,8 +123,8 @@ func (c *Client) newRequest(ctx context.Context, method http.Method, path string
 	}
 
 	for k, v := range defaultHeaders {
-		if req.Header.Get(k) == "" {
-			req.Header.Set(k, v)
+		if req.Header.Get(string(k)) == "" {
+			req.Header.Set(string(k), v)
 		}
 	}
 
@@ -171,10 +160,10 @@ func uniqueStrings(input []string) []string {
 }
 
 // Download downloads a file.
-func Download(ctx context.Context, dsn types.URI, filename string) error {
+func Download(ctx context.Context, uri *types.URI, filename string) error {
 	res, err := NewClient(NewOptions(
-		WithBaseUri(dsn.Scheme+"://"+dsn.Hostname()),
-	)).Do(ctx, schema.NewEndpoint("Download file", http.MethodGet, dsn.Path))
+		WithBaseUri(uri.BaseUri().String()),
+	)).Do(ctx, schema.NewEndpoint("Download file", http.MethodGet, uri.Path))
 
 	if err != nil {
 		return err

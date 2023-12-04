@@ -2,6 +2,8 @@ package event
 
 import (
 	"bytes"
+	"database/sql/driver"
+	"fmt"
 	"strings"
 )
 
@@ -27,42 +29,54 @@ var (
 )
 
 // String outputs the Kind as a string.
-func (k Kind) String() string {
-	return KindNames[k]
+func (k *Kind) String() string {
+	if !k.Validate() {
+		return ""
+	}
+
+	return KindNames[*k]
+}
+
+// Bytes outputs the Kind as bytes.
+func (k *Kind) Bytes() []byte {
+	return []byte(k.String())
+}
+
+// Value outputs the Kind as a value.
+func (k *Kind) Value() (driver.Value, error) {
+	return k.String(), nil
 }
 
 // MarshalJSON outputs the Kind as a json.
-func (k Kind) MarshalJSON() ([]byte, error) {
-	if !k.Validate() {
-		return []byte(`""`), nil
-	}
-
+func (k *Kind) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + k.String() + `"`), nil
 }
 
 // UnmarshalJSON parses Kind from json.
 func (k *Kind) UnmarshalJSON(data []byte) error {
-	s := string(bytes.Trim(data, `"`))
-	if r := ParseKind(s); r.Validate() {
-		*k = r
+	v, err := ParseKind(string(bytes.Trim(data, `"`)))
+	if err != nil {
+		return err
 	}
+
+	*k = *v
 
 	return nil
 }
 
 // Validate returns true if the Kind is valid.
-func (k Kind) Validate() bool {
-	return k != KindInvalid
+func (k *Kind) Validate() bool {
+	return *k != KindInvalid
 }
 
 // ParseKind parses Kind from string.
-func ParseKind(value string) Kind {
+func ParseKind(value string) (*Kind, error) {
 	value = strings.ToLower(value)
 	for k, v := range KindNames {
 		if strings.ToLower(v) == value {
-			return k
+			return &k, nil
 		}
 	}
 
-	return KindInvalid
+	return nil, fmt.Errorf("unsupported kind: %s", value)
 }

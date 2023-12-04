@@ -12,12 +12,12 @@ import (
 type (
 	// Options represents a HTML renderer configuration.
 	Options struct {
-		Directory string                           `json:"directory" yaml:"Directory"`
-		Debug     bool                             `json:"debug"     yaml:"Debug"`
-		Minify    bool                             `json:"minify"    yaml:"Minify"`
-		Cache     bool                             `json:"cache"     yaml:"Cache"`
-		Variables pongo2.Context                   `json:"variables" yaml:"Variables"`
-		filters   map[string]pongo2.FilterFunction `json:"-"`
+		Directory string                           `json:"directory"`
+		Debug     bool                             `json:"debug"`
+		Minify    bool                             `json:"minify"`
+		Cache     bool                             `json:"cache"`
+		Variables pongo2.Context                   `json:"variables"`
+		filters   map[string]pongo2.FilterFunction ``
 	}
 
 	// Html represents a HTML renderer.
@@ -53,24 +53,24 @@ type (
 
 	// Page represents a page in a template.
 	Page struct {
-		Title                  string         `yaml:"Title"`
-		Description            string         `yaml:"Description"`
-		Keywords               []string       `yaml:"Keywords"`
-		Language               string         `yaml:"Language"`
-		Path                   string         `yaml:"Path"`
-		Layout                 string         `yaml:"Layout"`
-		Author                 string         `yaml:"Author"`
-		RobotsIndex            bool           `yaml:"RobotsIndex"`
-		RobotsFollow           bool           `yaml:"RobotsFollow"`
-		Draft                  bool           `yaml:"Draft"`
-		Static                 bool           `yaml:"Static"`
-		SitemapChangeFrequency string         `yaml:"SitemapChangeFrequency"`
-		SitemapPriority        float64        `yaml:"SitemapPriority"`
-		CreatedAt              time.Time      `yaml:"CreatedAt"`
-		UpdatedAt              time.Time      `yaml:"UpdatedAt"`
-		Variables              pongo2.Context `yaml:"Variables"`
-		template               *pongo2.Template
-		minify                 bool
+		Title                  string           `yaml:"Title"`
+		Description            string           `yaml:"Description"`
+		Keywords               []string         `yaml:"Keywords"`
+		Language               string           `yaml:"Language"`
+		Path                   string           `yaml:"Path"`
+		Layout                 string           `yaml:"Layout"`
+		Author                 string           `yaml:"Author"`
+		RobotsIndex            bool             `yaml:"RobotsIndex"`
+		RobotsFollow           bool             `yaml:"RobotsFollow"`
+		Draft                  bool             `yaml:"Draft"`
+		Static                 bool             `yaml:"Static"`
+		SitemapChangeFrequency string           `yaml:"SitemapChangeFrequency"`
+		SitemapPriority        float64          `yaml:"SitemapPriority"`
+		CreatedAt              time.Time        `yaml:"CreatedAt"`
+		UpdatedAt              time.Time        `yaml:"UpdatedAt"`
+		Variables              pongo2.Context   `yaml:"Variables"`
+		template               *pongo2.Template ``
+		minify                 bool             ``
 	}
 
 	Blocks   map[string]*Block
@@ -79,5 +79,5 @@ type (
 	Pages    map[string]*Page
 
 	// Option represents the service option.
-	Option func(o *Options)
+	Option func(*Options)
 )

@@ -107,7 +107,7 @@ func (h *Html) Load() error {
 }
 
 // Render renders the given template with the given variables.
-func (h *Html) Render(writer io.Writer, template string, variables any, l ...string) error {
+func (h *Html) Render(writer io.Writer, template string, variables any) error {
 	h.mutex.Lock()
 	defer h.mutex.Unlock()
 

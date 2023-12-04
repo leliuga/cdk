@@ -7,46 +7,50 @@ import (
 )
 
 // NewOption creates a new Option instance.
-func NewOption(name string, description string, required bool, t Type, def any, min any, max any, choices []string) *Option {
+func NewOption(name String, description String, required bool, t Type, def any, min any, max any, choices []String) *Option {
+	var chs []String
+	for _, choice := range choices {
+		chs = append(chs, choice)
+	}
 	return &Option{
 		Name:        name,
 		Description: description,
 		Required:    required,
-		Type:        t,
+		Type:        &t,
 		Default:     def,
 		Min:         min,
 		Max:         max,
-		Choices:     choices,
+		Choices:     chs,
 	}
 }
 
 // NewBooleanOption creates a new Option instance with type boolean.
-func NewBooleanOption(name string, description string, required bool, def bool) *Option {
+func NewBooleanOption(name String, description String, required bool, def bool) *Option {
 	return NewOption(name, description, required, TypeBoolean, def, nil, nil, nil)
 }
 
 // NewDateTimeOption creates a new Option instance with type datetime.
-func NewDateTimeOption(name string, description string, required bool, def string, min string, max string) *Option {
+func NewDateTimeOption(name String, description String, required bool, def String, min String, max String) *Option {
 	return NewOption(name, description, required, TypeDateTime, def, min, max, nil)
 }
 
 // NewFloatOption creates a new Option instance with type float.
-func NewFloatOption(name string, description string, required bool, def float64, min float64, max float64) *Option {
+func NewFloatOption(name String, description String, required bool, def float64, min float64, max float64) *Option {
 	return NewOption(name, description, required, TypeFloat, def, min, max, nil)
 }
 
 // NewIDOption creates a new Option instance with type id.
-func NewIDOption(name string, description string, required bool, def string) *Option {
+func NewIDOption(name String, description String, required bool, def String) *Option {
 	return NewOption(name, description, required, TypeID, def, nil, nil, nil)
 }
 
 // NewIntegerOption creates a new Option instance with type integer.
-func NewIntegerOption(name string, description string, required bool, def int, min int, max int) *Option {
+func NewIntegerOption(name String, description String, required bool, def int, min int, max int) *Option {
 	return NewOption(name, description, required, TypeInteger, def, min, max, nil)
 }
 
 // NewStringOption creates a new Option instance with type string.
-func NewStringOption(name string, description string, required bool, def string, choices []string) *Option {
+func NewStringOption(name String, description String, required bool, def String, choices []String) *Option {
 	return NewOption(name, description, required, TypeString, def, nil, nil, choices)
 }
 
@@ -66,7 +70,7 @@ func (o Options) Len() int {
 }
 
 // Index returns the index of the option with the given name.
-func (o Options) Index(name string) int {
+func (o Options) Index(name String) int {
 	for index, option := range o {
 		if option.Name == name {
 			return index
@@ -77,7 +81,7 @@ func (o Options) Index(name string) int {
 }
 
 // Get returns the option with the given name.
-func (o Options) Get(name string) (*Option, error) {
+func (o Options) Get(name String) (*Option, error) {
 	index := o.Index(name)
 	if index == -1 {
 		return nil, fmt.Errorf("option %s not found", name)
@@ -87,7 +91,7 @@ func (o Options) Get(name string) (*Option, error) {
 }
 
 // DefaultValue returns the default value of the option with the given name.
-func (o Options) DefaultValue(name string, value any) any {
+func (o Options) DefaultValue(name String, value any) any {
 	if index := o.Index(name); index != -1 {
 		return o[index].Default
 	}
@@ -96,7 +100,7 @@ func (o Options) DefaultValue(name string, value any) any {
 }
 
 // SetDefaultValue sets the default value of the option with the given name.
-func (o Options) SetDefaultValue(name string, value any) error {
+func (o Options) SetDefaultValue(name String, value any) error {
 	index := o.Index(name)
 	if index == -1 {
 		return fmt.Errorf("option %s not found", name)
@@ -104,7 +108,7 @@ func (o Options) SetDefaultValue(name string, value any) error {
 
 	kind := reflect.TypeOf(value).String()
 
-	switch o[index].Type {
+	switch *o[index].Type {
 	case TypeBoolean:
 		if kind != "bool" {
 			return fmt.Errorf("option %s is not of type boolean", name)
@@ -173,23 +177,23 @@ func (o Options) SetDefaultValue(name string, value any) error {
 }
 
 // ToSlice returns the options as a slice of strings.
-func (o Options) ToSlice() []string {
-	var arguments []string
+func (o Options) ToSlice() []String {
+	var arguments []String
 	for _, option := range o {
 		if option.Default == nil || option.Default == "" {
 			continue
 		}
-		switch option.Type {
+		switch *option.Type {
 		case TypeBoolean:
 			if option.Default.(bool) {
 				arguments = append(arguments, option.Name)
 			}
 		case TypeFloat:
-			arguments = append(arguments, option.Name, fmt.Sprintf("%f", option.Default))
+			arguments = append(arguments, option.Name, Sprintf("%f", option.Default))
 		case TypeInteger:
-			arguments = append(arguments, option.Name, fmt.Sprintf("%d", option.Default))
+			arguments = append(arguments, option.Name, Sprintf("%d", option.Default))
 		default:
-			arguments = append(arguments, option.Name, fmt.Sprintf("%s", option.Default))
+			arguments = append(arguments, option.Name, Sprintf("%s", option.Default))
 		}
 	}
 

@@ -2,10 +2,10 @@ package types
 
 import (
 	"bytes"
+	"database/sql/driver"
 	"fmt"
 	"io"
 	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/goccy/go-json"
@@ -34,39 +34,66 @@ var (
 	}
 )
 
+// ContentTypeMarshal parses ContentType and returns io.Reader
+func ContentTypeMarshal(contentType string, in any) (io.Reader, error) {
+	ct, err := ParseContentType(contentType)
+	if err != nil {
+		return nil, err
+	}
+
+	return ct.Marshal(in)
+}
+
+// ContentTypeUnmarshal
+func ContentTypeUnmarshal(contentType string, r io.Reader, out any) error {
+	ct, err := ParseContentType(contentType)
+	if err != nil {
+		return err
+	}
+
+	return ct.Unmarshal(r, out)
+}
+
 // String outputs the ContentType as a string.
-func (ct ContentType) String() string {
-	return ContentTypeNames[ct]
+func (ct *ContentType) String() string {
+	if !ct.Validate() {
+		return ""
+	}
+
+	return ContentTypeNames[*ct]
 }
 
 // Bytes returns the ContentType as a []byte.
-func (ct ContentType) Bytes() []byte {
-	return []byte(strconv.Itoa(int(ct)))
+func (ct *ContentType) Bytes() []byte {
+	return []byte(ct.String())
+}
+
+// Value outputs the ContentType as a value.
+func (ct *ContentType) Value() (driver.Value, error) {
+	return ct.String(), nil
 }
 
 // MarshalJSON outputs the ContentType as a json.
-func (ct ContentType) MarshalJSON() ([]byte, error) {
-	if !ct.Validate() {
-		return []byte(`""`), nil
-	}
-
+func (ct *ContentType) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + ct.String() + `"`), nil
 }
 
 // UnmarshalJSON parses ContentType from json.
 func (ct *ContentType) UnmarshalJSON(data []byte) error {
-	s := string(bytes.Trim(data, `"`))
-	if r := ParseContentType(s); r.Validate() {
-		*ct = r
+	v, err := ParseContentType(string(bytes.Trim(data, `"`)))
+	if err != nil {
+		return err
 	}
+
+	*ct = *v
 
 	return nil
 }
 
-// Marshal returns the ContentType as a []byte.
-func (ct ContentType) Marshal(in any) (io.Reader, error) {
+// Marshal returns the ContentType encoding of in.
+func (ct *ContentType) Marshal(in any) (io.Reader, error) {
 	buffer := bytes.NewBuffer(nil)
-	switch ct {
+	switch *ct {
 	case ContentTypeJson:
 		if err := json.NewEncoder(buffer).Encode(in); err != nil {
 			return nil, err
@@ -95,9 +122,9 @@ func (ct ContentType) Marshal(in any) (io.Reader, error) {
 	return buffer, nil
 }
 
-// Unmarshal parses ContentType from []byte.
-func (ct ContentType) Unmarshal(r io.Reader, out any) error {
-	switch ct {
+// Unmarshal parses the ContentType-encoded data and stores the result in the value pointed to by out.
+func (ct *ContentType) Unmarshal(r io.Reader, out any) error {
+	switch *ct {
 	case ContentTypeJson:
 		return json.NewDecoder(r).Decode(out)
 	case ContentTypeMsgPack:
@@ -110,7 +137,7 @@ func (ct ContentType) Unmarshal(r io.Reader, out any) error {
 			return err
 		}
 
-		if ct == ContentTypeFormUrlEncoded {
+		if *ct == ContentTypeFormUrlEncoded {
 			out, err = url.ParseQuery(string(b))
 			return err
 		}
@@ -122,20 +149,20 @@ func (ct ContentType) Unmarshal(r io.Reader, out any) error {
 }
 
 // Validate returns true if the ContentType is valid.
-func (ct ContentType) Validate() bool {
-	return ct != ContentTypeInvalid
+func (ct *ContentType) Validate() bool {
+	return *ct != ContentTypeInvalid
 }
 
 // ParseContentType parses ContentType from string.
-func ParseContentType(value string) ContentType {
+func ParseContentType(value string) (*ContentType, error) {
 	parts := strings.Split(strings.ToLower(value), ";")
 	value = parts[0]
 
 	for k, v := range ContentTypeNames {
 		if v == value {
-			return k
+			return &k, nil
 		}
 	}
 
-	return ContentTypeInvalid
+	return nil, fmt.Errorf("unsupported content type: %s", value)
 }

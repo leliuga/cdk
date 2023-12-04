@@ -2,28 +2,27 @@ package types
 
 import (
 	"database/sql/driver"
-	"fmt"
 	"reflect"
 	"sort"
-	"strings"
 )
 
+// NewMap creates a new Map instance.
 func NewMap[T any]() Map[T] {
 	return make(Map[T])
 }
 
 // Set sets the value for the provided key.
-func (m Map[T]) Set(key string, value T) {
+func (m Map[T]) Set(key String, value T) {
 	m[key] = value
 }
 
 // Get returns the value for the provided key.
-func (m Map[T]) Get(key string) T {
+func (m Map[T]) Get(key String) T {
 	return m[key]
 }
 
 // Delete deletes the value for the provided key.
-func (m Map[T]) Delete(key string) {
+func (m Map[T]) Delete(key String) {
 	delete(m, key)
 }
 
@@ -35,18 +34,18 @@ func (m Map[T]) Clear() {
 }
 
 // Has returns whether the provided key exists in the map.
-func (m Map[T]) Has(key string) bool {
+func (m Map[T]) Has(key String) bool {
 	_, exists := m[key]
 	return exists
 }
 
 // Keys returns a slice of keys in the map.
-func (m Map[T]) Keys() (keys []string) {
+func (m Map[T]) Keys() (keys []String) {
 	for key := range m {
 		keys = append(keys, key)
 	}
 
-	sort.Strings(keys)
+	//sort.Strings(keys)
 
 	return keys
 }
@@ -97,7 +96,7 @@ func (m Map[T]) Merge(maps ...Map[T]) Map[T] {
 }
 
 // Range iterates over elements in the map.
-func (m Map[T]) Range(fn func(key string, value T) bool) {
+func (m Map[T]) Range(fn func(key String, value T) bool) {
 	for key, value := range m {
 		if !fn(key, value) {
 			break
@@ -105,16 +104,16 @@ func (m Map[T]) Range(fn func(key string, value T) bool) {
 	}
 }
 
-// String returns a string representation of the map.
-func (m Map[T]) String(sep, join string) string {
-	parts := make([]string, 0, m.Len())
+// String returns a String representation of the map.
+func (m Map[T]) String(sep, join String) String {
+	parts := make([]String, 0, m.Len())
 	for key, value := range m {
-		parts = append(parts, fmt.Sprintf("%s%s%s", key, sep, value))
+		parts = append(parts, Sprintf("%s%s%s", key, sep, value))
 	}
 
-	sort.Strings(parts)
+	//sort.Strings(parts)
 
-	return strings.Join(parts, join)
+	return String("").Join(parts, join)
 }
 
 // Value returns a value representation of the map.
@@ -122,21 +121,21 @@ func (m Map[T]) Value() (driver.Value, error) {
 	return m.String("=", ";"), nil
 }
 
-// AsString returns the value for the provided key as a string.
-func (m Map[T]) AsString(key string) string {
+// AsString returns the value for the provided key as a String.
+func (m Map[T]) AsString(key String) String {
 	switch reflect.ValueOf(m[key]).Kind() {
 	case reflect.Bool:
-		return fmt.Sprintf("%t", m[key])
+		return Sprintf("%t", m[key])
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return fmt.Sprintf("%d", m[key])
+		return Sprintf("%d", m[key])
 	case reflect.Float32, reflect.Float64:
-		return fmt.Sprintf("%f", m[key])
+		return Sprintf("%f", m[key])
 	case reflect.Invalid:
 		return ""
 	}
 
-	return fmt.Sprintf("%s", m[key])
+	return Sprintf("%s", m[key])
 }
 
 // Merge merges the provided maps into a new map.
@@ -148,7 +147,7 @@ func Merge[T any](maps ...Map[T]) Map[T] {
 }
 
 // ConflictKeys returns a map of conflicting keys between the two maps.
-func ConflictKeys[T any](a, b Map[T]) (conflicts []string) {
+func ConflictKeys[T any](a, b Map[T]) (conflicts []String) {
 	for key := range a {
 		if b.Has(key) {
 			conflicts = append(conflicts, key)
@@ -159,7 +158,7 @@ func ConflictKeys[T any](a, b Map[T]) (conflicts []string) {
 }
 
 // DiffKeys returns a map of added and removed keys between the two maps.
-func DiffKeys[T any](a, b Map[T]) (added, removed []string) {
+func DiffKeys[T any](a, b Map[T]) (added, removed []String) {
 	for key := range a {
 		if !b.Has(key) {
 			added = append(added, key)
@@ -192,7 +191,7 @@ func ToMap[M ~map[K]T, K comparable, T any](m M) Map[T] {
 	}
 
 	for key, value := range m {
-		newMap[fmt.Sprintf(format, key)] = value
+		newMap[Sprintf(format, key)] = value
 	}
 
 	return newMap

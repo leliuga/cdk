@@ -15,6 +15,7 @@ type (
 	// Client is an HTTP client.
 	Client struct {
 		*Options
+
 		client  *nethttp.Client
 		cookies []*nethttp.Cookie
 	}
@@ -38,21 +39,21 @@ type (
 
 	// Options is an HTTP client options.
 	Options struct {
-		BaseUri               types.URI      `json:"base_uri"`
-		Headers               nethttp.Header `json:"headers"`
-		ProxyURL              types.URI      `json:"proxy_url"`
-		MaxIdleConnections    int            `json:"max_idle_connections"`
-		MaxConnectionsPerHost int            `json:"max_connections_per_host"`
-		WriteBufferSize       int            `json:"write_buffer_size"`
-		ReadBufferSize        int            `json:"read_buffer_size"`
-		Timeout               time.Duration  `json:"timeout"`
-		KeepAlive             time.Duration  `json:"keep_alive"`
-		TLSHandshake          time.Duration  `json:"tls_handshake"`
-		ExpectContinue        time.Duration  `json:"expect_continue"`
-		IdleConnection        time.Duration  `json:"idle_connection"`
-		ResponseHeader        time.Duration  `json:"response_header"`
-		QPS                   float32        `json:"qps"`
-		Burst                 int            `json:"burst"`
+		BaseUri               *types.URI    `json:"base_uri"`
+		Headers               http.Headers  `json:"headers"`
+		ProxyURL              *types.URI    `json:"proxy_url"`
+		MaxIdleConnections    int           `json:"max_idle_connections"`
+		MaxConnectionsPerHost int           `json:"max_connections_per_host"`
+		WriteBufferSize       int           `json:"write_buffer_size"`
+		ReadBufferSize        int           `json:"read_buffer_size"`
+		Timeout               time.Duration `json:"timeout"`
+		KeepAlive             time.Duration `json:"keep_alive"`
+		TLSHandshake          time.Duration `json:"tls_handshake"`
+		ExpectContinue        time.Duration `json:"expect_continue"`
+		IdleConnection        time.Duration `json:"idle_connection"`
+		ResponseHeader        time.Duration `json:"response_header"`
+		QPS                   float32       `json:"qps"`
+		Burst                 int           `json:"burst"`
 	}
 
 	// LimiterRoundTripper is a tripper that applies rate limiting to requests.
@@ -72,5 +73,5 @@ type (
 	}
 
 	// Option represents the service option.
-	Option func(o *Options)
+	Option func(*Options)
 )

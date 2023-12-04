@@ -12,8 +12,8 @@ type (
 	Endpoint struct {
 		validation.Validatable `json:"-"`
 		Name                   string            `json:"name"`
-		Method                 http.Method       `json:"method"`
-		Path                   string            `json:"path"`
+		Method                 *http.Method      `json:"method"`
+		Path                   *types.Path       `json:"path"`
 		Description            string            `json:"description"`
 		Documentation          string            `json:"documentation"`
 		Deprecated             string            `json:"deprecated"`

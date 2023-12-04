@@ -2,6 +2,8 @@ package http
 
 import (
 	"bytes"
+	"database/sql/driver"
+	"fmt"
 	"strings"
 )
 
@@ -149,43 +151,54 @@ var (
 )
 
 // String outputs the Status as string.
-func (s Status) String() string {
-	return StatusNames[s]
+func (s *Status) String() string {
+	if !s.Validate() {
+		return ""
+	}
+
+	return StatusNames[*s]
+}
+
+// Bytes returns the Status as bytes.
+func (s *Status) Bytes() []byte {
+	return []byte(s.String())
+}
+
+// Value outputs the Status as a value.
+func (s *Status) Value() (driver.Value, error) {
+	return s.String(), nil
 }
 
 // MarshalJSON outputs the Status as a json.
-func (s Status) MarshalJSON() ([]byte, error) {
-	if !s.Validate() {
-		return []byte(`""`), nil
-	}
-
+func (s *Status) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + s.String() + `"`), nil
 }
 
 // UnmarshalJSON parses the Status from json.
 func (s *Status) UnmarshalJSON(data []byte) error {
-	str := string(bytes.Trim(data, `"`))
-
-	if status := ParseStatus(str); status.Validate() {
-		*s = status
+	v, err := ParseStatus(string(bytes.Trim(data, `"`)))
+	if err != nil {
+		return err
 	}
+
+	*s = *v
 
 	return nil
 }
 
 // Validate returns true if the Dialect is valid.
-func (s Status) Validate() bool {
-	return s != StatusInvalid
+func (s *Status) Validate() bool {
+	return *s != StatusInvalid
 }
 
 // ParseStatus parses the Status from string.
-func ParseStatus(value string) Status {
+func ParseStatus(value string) (*Status, error) {
 	value = strings.ToLower(value)
 	for k, v := range StatusNames {
 		if strings.ToLower(v) == value {
-			return k
+			return &k, nil
 		}
 	}
 
-	return StatusInvalid
+	return nil, fmt.Errorf("unsupported status %s", value)
 }

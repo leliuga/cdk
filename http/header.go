@@ -2,6 +2,8 @@ package http
 
 import (
 	"bytes"
+	"database/sql/driver"
+	"fmt"
 	"strings"
 )
 
@@ -338,42 +340,54 @@ var (
 )
 
 // String outputs the Header as a string.
-func (h Header) String() string {
-	return HeaderNames[h]
+func (h *Header) String() string {
+	if !h.Validate() {
+		return ""
+	}
+
+	return HeaderNames[*h]
+}
+
+// Bytes returns the Header as a []byte.
+func (h *Header) Bytes() []byte {
+	return []byte(h.String())
+}
+
+// Value outputs the Header as a value.
+func (h *Header) Value() (driver.Value, error) {
+	return h.String(), nil
 }
 
 // MarshalJSON outputs the Header as a json.
-func (h Header) MarshalJSON() ([]byte, error) {
-	if !h.Validate() {
-		return []byte(`""`), nil
-	}
-
+func (h *Header) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + h.String() + `"`), nil
 }
 
 // UnmarshalJSON parses the Header from json.
 func (h *Header) UnmarshalJSON(data []byte) error {
-	str := string(bytes.Trim(data, `"`))
-	if header := ParseHeader(str); header.Validate() {
-		*h = header
+	v, err := ParseHeader(string(bytes.Trim(data, `"`)))
+	if err != nil {
+		return err
 	}
+
+	*h = *v
 
 	return nil
 }
 
 // Validate returns true if the Header is valid.
-func (h Header) Validate() bool {
-	return h != HeaderInvalid
+func (h *Header) Validate() bool {
+	return *h != HeaderInvalid
 }
 
 // ParseHeader parses the Header from string.
-func ParseHeader(value string) Header {
+func ParseHeader(value string) (*Header, error) {
 	value = strings.ToLower(value)
 	for k, v := range HeaderNames {
 		if strings.ToLower(v) == value {
-			return k
+			return &k, nil
 		}
 	}
 
-	return HeaderInvalid
+	return nil, fmt.Errorf("unsupported header: %s", value)
 }

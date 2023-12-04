@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"io"
 	nethttp "net/http"
 	"net/http/httputil"
@@ -14,6 +13,14 @@ import (
 	"golang.org/x/net/html"
 )
 
+// FromResponse creates a new Response instance from a net/http response.
+func FromResponse(response *nethttp.Response) *Response {
+	return &Response{
+		response: response,
+		headers:  http.FromHeaders(response.Header),
+	}
+}
+
 func (r *Response) Status() http.Status        { return http.Status(r.response.StatusCode) }
 func (r *Response) Headers() http.Headers      { return r.headers }
 func (r *Response) Cookies() []*nethttp.Cookie { return r.response.Cookies() }
@@ -21,14 +28,10 @@ func (r *Response) Body() io.ReadCloser        { return r.response.Body }
 func (r *Response) ContentLength() int64       { return r.response.ContentLength }
 
 // Unmarshal unmarshals the response body into the given value.
-func (r *Response) Unmarshal(v any) error {
-	cType := r.headers[http.HeaderContentType]
-	ct := types.ParseContentType(cType)
-	if !ct.Validate() {
-		return fmt.Errorf("unsupported content type: %s", cType)
-	}
+func (r *Response) Unmarshal(out any) error {
+	contentType := r.headers.Get(http.HeaderContentType)
 
-	return ct.Unmarshal(r.Body(), v)
+	return types.ContentTypeUnmarshal(contentType, r.Body(), out)
 }
 
 // HtmlQuery returns the html.Node of the response body.

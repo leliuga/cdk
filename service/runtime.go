@@ -54,11 +54,14 @@ const (
 
 // NewRuntime creates a new Runtime.
 func NewRuntime() *Runtime {
+	provider := ProviderBareMetal
+	engine := EngineKubernetes
+
 	return &Runtime{
-		Provider:           ProviderBareMetal,
+		Provider:           &provider,
 		Namespace:          DefaultServiceNamespace,
 		ServiceAccountName: DefaultServiceAccountName,
-		Engine:             EngineKubernetes,
+		Engine:             &engine,
 		Replicas:           DefaultServiceReplicas,
 		Resources: &ResourceRequirements{
 			Limits: corev1.ResourceList{

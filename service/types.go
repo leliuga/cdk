@@ -60,12 +60,12 @@ type (
 
 	// Runtime defines the runtime for a Service.
 	Runtime struct {
-		Provider           Provider              `json:"provider"             env:"PROVIDER"`
+		Provider           *Provider             `json:"provider"             env:"PROVIDER"`
 		Region             string                `json:"region"               env:"REGION"`
 		Zone               string                `json:"zone"                 env:"ZONE"`
 		Namespace          string                `json:"namespace"            env:"NAMESPACE"`
 		ServiceAccountName string                `json:"service_account_name" env:"SERVICE_ACCOUNT_NAME"`
-		Engine             Engine                `json:"engine"               env:"ENGINE"`
+		Engine             *Engine               `json:"engine"               env:"ENGINE"`
 		Replicas           int32                 `json:"replicas"             env:"REPLICAS"`
 		Resources          *ResourceRequirements `json:"resources"            env:"RESOURCES"`
 		Probe              *RuntimeProbe         `json:"probe"                env:"PROBE"`
@@ -103,7 +103,7 @@ type (
 	Provider uint8
 
 	// Option represents the service option.
-	Option func(o *Options)
+	Option func(*Options)
 
 	// IKernel represents the service kernel interface.
 	IKernel interface {

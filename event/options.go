@@ -1,8 +1,8 @@
 package event
 
 import (
+	"bufio"
 	"net/url"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/leliuga/cdk/types"
@@ -14,7 +14,7 @@ func NewOptions(options ...Option) *Options {
 		ID:         uuid.New().String(),
 		Attributes: types.NewMap[string](),
 		Data:       []byte{},
-		Happen:     types.DateTime{Time: time.Now()},
+		Happen:     types.DateTimeNow(),
 	}
 
 	for _, option := range options {
@@ -41,14 +41,14 @@ func WithVersion(value string) Option {
 // WithSchema sets the schema for the event.
 func WithSchema(value string) Option {
 	return func(o *Options) {
-		o.Schema = types.ParseURI(value)
+		o.Schema, _ = types.ParseURI(value)
 	}
 }
 
 // WithSource sets the source for the event.
 func WithSource(value string) Option {
 	return func(o *Options) {
-		o.Source = types.ParseURI(value)
+		o.Source, _ = types.ParseURI(value)
 	}
 }
 
@@ -83,7 +83,10 @@ func WithData(value []byte) Option {
 // WithJsonData sets the json data for the event.
 func WithJsonData(value any) Option {
 	return func(o *Options) {
-		o.Data, _ = types.ContentTypeJson.Marshal(value)
+		json := types.ContentTypeJson
+		reader, _ := json.Marshal(value)
+		buf := bufio.NewScanner(reader)
+		o.Data, _ = buf.Bytes(), nil
 	}
 }
 
@@ -109,7 +112,7 @@ func WithFormUrlEncodedData(value url.Values) Option {
 }
 
 // WithHappen sets the happen for the event.
-func WithHappen(value types.DateTime) Option {
+func WithHappen(value *types.DateTime) Option {
 	return func(o *Options) {
 		o.Happen = value
 	}

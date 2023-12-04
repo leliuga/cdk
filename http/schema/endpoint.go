@@ -11,10 +11,12 @@ import (
 )
 
 func NewEndpoint(name string, method http.Method, path string) *Endpoint {
+	p, _ := types.ParsePath(path)
+
 	return &Endpoint{
 		Name:    name,
-		Method:  method,
-		Path:    path,
+		Method:  &method,
+		Path:    p,
 		Headers: http.Headers{},
 		Expect:  NewExpect(),
 	}

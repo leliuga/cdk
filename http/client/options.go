@@ -1,9 +1,9 @@
 package client
 
 import (
-	"net/http"
 	"time"
 
+	"github.com/leliuga/cdk/http"
 	"github.com/leliuga/cdk/service"
 	"github.com/leliuga/cdk/types"
 )
@@ -27,8 +27,8 @@ const (
 // NewOptions creates a new options.
 func NewOptions(options ...Option) *Options {
 	opts := Options{
-		BaseUri:               types.URI{},
-		Headers:               http.Header{},
+		BaseUri:               &types.URI{},
+		Headers:               http.Headers{},
 		MaxIdleConnections:    DefaultMaxIdleConnections,
 		MaxConnectionsPerHost: DefaultMaxConnectionsPerHost,
 		WriteBufferSize:       DefaultWriteBufferSize,
@@ -53,12 +53,12 @@ func NewOptions(options ...Option) *Options {
 // WithBaseUri sets the dsn.
 func WithBaseUri(value string) Option {
 	return func(o *Options) {
-		o.BaseUri = types.ParseURI(value)
+		o.BaseUri, _ = types.ParseURI(value)
 	}
 }
 
 // WithHeaders sets the headers.
-func WithHeaders(value http.Header) Option {
+func WithHeaders(value http.Headers) Option {
 	return func(o *Options) {
 		o.Headers = value
 	}
@@ -67,7 +67,7 @@ func WithHeaders(value http.Header) Option {
 // WithProxyURL sets the proxy url.
 func WithProxyURL(value string) Option {
 	return func(o *Options) {
-		o.ProxyURL = types.ParseURI(value)
+		o.ProxyURL, _ = types.ParseURI(value)
 	}
 }
 

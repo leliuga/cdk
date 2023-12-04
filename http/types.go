@@ -12,12 +12,12 @@ type (
 	Status uint16
 
 	// Headers represents a collection of HTTP headers.
-	Headers map[Header]string
+	Headers map[*Header]string
 
 	// Error represents an HTTP error.
 	Error struct {
-		Status  Status `json:"status" yaml:"Status"`
-		Message string `json:"message" yaml:"Message"`
+		Status  *Status `json:"status" yaml:"Status"`
+		Message string  `json:"message" yaml:"Message"`
 	}
 
 	// IError defines the interface for an HTTP error.
@@ -25,6 +25,6 @@ type (
 		error
 
 		// StatusCode returns the HTTP status code of the error
-		StatusCode() Status
+		StatusCode() *Status
 	}
 )

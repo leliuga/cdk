@@ -2,7 +2,10 @@ package http
 
 import (
 	"bytes"
+	"database/sql/driver"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // Common HTTP methods, these are defined in RFC 7231 section 4.3.
@@ -35,42 +38,54 @@ var (
 )
 
 // String outputs the Method as a string.
-func (m Method) String() string {
-	return MethodNames[m]
+func (m *Method) String() string {
+	if !m.Validate() {
+		return ""
+	}
+
+	return MethodNames[*m]
+}
+
+// Bytes returns the Method as a []byte.
+func (m *Method) Bytes() []byte {
+	return []byte(m.String())
+}
+
+// Value outputs the Method as a value.
+func (m *Method) Value() (driver.Value, error) {
+	return m.String(), nil
 }
 
 // MarshalJSON outputs the Method as a json.
-func (m Method) MarshalJSON() ([]byte, error) {
-	if !m.Validate() {
-		return []byte(`""`), nil
-	}
-
+func (m *Method) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + m.String() + `"`), nil
 }
 
 // UnmarshalJSON parses the Method from json.
 func (m *Method) UnmarshalJSON(data []byte) error {
-	str := string(bytes.Trim(data, `"`))
-	if method := ParseMethod(str); method.Validate() {
-		*m = method
+	v, err := ParseMethod(string(bytes.Trim(data, `"`)))
+	if err != nil {
+		return err
 	}
+
+	*m = *v
 
 	return nil
 }
 
 // Validate returns true if the Method is valid.
-func (m Method) Validate() bool {
-	return m != MethodInvalid
+func (m *Method) Validate() bool {
+	return *m != MethodInvalid
 }
 
 // ParseMethod parses the Method from string.
-func ParseMethod(value string) Method {
+func ParseMethod(value string) (*Method, error) {
 	value = strings.ToUpper(value)
 	for k, v := range MethodNames {
 		if v == value {
-			return k
+			return &k, nil
 		}
 	}
 
-	return MethodInvalid
+	return nil, errors.Errorf("unsupported method: %s", value)
 }

@@ -15,13 +15,13 @@ type (
 	Options struct {
 		ID         string            `json:"id"`
 		Version    string            `json:"version"`
-		Schema     types.URI         `json:"schema"`
-		Source     types.URI         `json:"source"`
+		Schema     *types.URI        `json:"schema"`
+		Source     *types.URI        `json:"source"`
 		Kind       Kind              `json:"kind"`
 		Action     Action            `json:"action"`
 		Attributes types.Map[string] `json:"attributes"`
 		Data       []byte            `json:"data"`
-		Happen     types.DateTime    `json:"happen"`
+		Happen     *types.DateTime   `json:"happen"`
 	}
 
 	// Action represents the event action.
@@ -31,5 +31,5 @@ type (
 	Kind uint16
 
 	// Option represents the event option.
-	Option func(o *Options)
+	Option func(*Options)
 )
